@@ -2,11 +2,12 @@
 
 
 ## Datasets:
-### UCF101-24
 
-### JHMDB-21
+UCF101-24
 
-### Restaurants Dataset
+JHMDB-21
+
+Restaurants Dataset
 
 ## Baselines
 YOWO
