@@ -17,7 +17,7 @@ from utils import *
 from cfg import parse_cfg
 from region_loss import RegionLoss
 
-from model import YOWO, get_fine_tuning_parameters
+from model import YOWOL, get_fine_tuning_parameters
 
 # Training settings
 opt = parse_opts()
@@ -86,7 +86,7 @@ if use_cuda:
     torch.cuda.manual_seed(seed)
 
 # Create model
-model = YOWO(opt)
+model = YOWOL(opt)
 
 model       = model.cuda()
 model       = nn.DataParallel(model, device_ids=None) # in multi-gpu case

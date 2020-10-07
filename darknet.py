@@ -88,20 +88,36 @@ class Darknet(nn.Module):
             if block['type'] == 'net':
                 continue
             elif block['type'] == 'convolutional' or block['type'] == 'maxpool' or block['type'] == 'reorg' or block['type'] == 'avgpool' or block['type'] == 'softmax' or block['type'] == 'connected':
+                print("ind:", ind)
                 x = self.models[ind](x)
+                print("x_shape:", x.shape)
                 outputs[ind] = x
+                # print("output:", outputs)
+
             elif block['type'] == 'route':
+                print("route debugging!")
                 layers = block['layers'].split(',')
+                print("layers:", layers)
                 layers = [int(i) if int(i) > 0 else int(i)+ind for i in layers]
+                print("layers:", layers)
+
                 if len(layers) == 1:
-                    x = outputs[layers[0]]
+                    print("ind_route:", ind)
+                    x = outputs[layers[0]]   #layer 16 # [10, 512, 14, 14]
                     outputs[ind] = x
+
                 elif len(layers) == 2:
-                    x1 = outputs[layers[0]]
-                    x2 = outputs[layers[1]]
-                    x = torch.cat((x1,x2),1)
+
+                    x1 = outputs[layers[0]]   #layer 27 # [10, 256, 7, 7]]
+
+                    x2 = outputs[layers[1]]   #layer 24 # [10, 1024, 7, 7]
+
+                    x = torch.cat((x1,x2),1) # [10, 1280, 7, 7]
+
                     outputs[ind] = x
+
             elif block['type'] == 'shortcut':
+                # print("shortcut debugging!")
                 from_layer = int(block['from'])
                 activation = block['activation']
                 from_layer = from_layer if from_layer > 0 else from_layer + ind
@@ -114,6 +130,7 @@ class Darknet(nn.Module):
                     x = F.relu(x, inplace=True)
                 outputs[ind] = x
             elif block['type'] == 'region':
+                print("loss:", ind)
                 continue
                 print("LOSSS")
             elif block['type'] == 'cost':
@@ -192,14 +209,20 @@ class Darknet(nn.Module):
                 models.append(Reorg(stride))
             elif block['type'] == 'route':
                 layers = block['layers'].split(',')
+                print("layers:", layers)
                 ind = len(models)
+                print("ind:", ind)
                 layers = [int(i) if int(i) > 0 else int(i)+ind for i in layers]
+                print("layers:", layers)
                 if len(layers) == 1:
                     prev_filters = out_filters[layers[0]]
+
                 elif len(layers) == 2:
                     assert(layers[0] == ind - 1)
                     prev_filters = out_filters[layers[0]] + out_filters[layers[1]]
+                
                 out_filters.append(prev_filters)
+
                 models.append(EmptyModule())
             elif block['type'] == 'shortcut':
                 ind = len(models)
@@ -335,9 +358,9 @@ class Darknet(nn.Module):
         fp.close()
 
 if __name__ == "__main__":
-    model = Darknet("cfg/yolo.cfg").cuda()
+    model = Darknet("cfg/yolo.cfg")
     print(model)
-    model.load_weights("yolo.weights")
-    data = torch.randn(24, 3, 224, 224).cuda()
-    output = model(data)
-    print(output.size())
+    # model.load_weights("yolo.weights")
+    x = torch.randn(10, 3, 224, 224)
+    y = model(x)
+    print(y.shape)
