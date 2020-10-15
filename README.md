@@ -21,7 +21,8 @@ Note that the JHMDB-21 dataset will be downloaded at ./datasets folder.
 bash ./datasets/download_data.bash
 ```
 ### Restaurants dataset (unbalanced)
-
+```
+```
 
 ## Running Experiment
 ### JHMDB-21
@@ -38,6 +39,8 @@ bash run_frame_mAP_jhmdb.sh
 ``` 
 
 ### Restaurants dataset (unbalanced)
+```
+```
 
 ## Referecne paper
 
