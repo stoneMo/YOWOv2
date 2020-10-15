@@ -171,29 +171,58 @@ class LinkNet(nn.Module):
 
         # link conv layers
         self.link_cov_1 = nn.Sequential(
-            nn.Conv3d(64, 64,
+            nn.Conv3d(64, 32,
             kernel_size=3,
-            stride=(2, 1, 1),
-            padding=(8, 1, 1),
+            stride=(1, 1, 1),
+            padding=(1, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(32),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(32, 64,
+            kernel_size=3,
+            stride=(1, 1, 1),
+            padding=(1, 1, 1),
             bias=False),
             nn.BatchNorm3d(64),
             nn.ReLU(inplace=True),
+
         )
 
+        
+
+
         self.link_cov_2 = nn.Sequential(
-            nn.Conv3d(128, 128,
+
+            nn.Conv3d(128, 64,
             kernel_size=3,
-            stride=(2, 1, 1),
-            padding=(4, 1, 1),
+            stride=(1, 1, 1),
+            padding=(1, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(64),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(64, 128,
+            kernel_size=3,
+            stride=(1, 1, 1),
+            padding=(1, 1, 1),
             bias=False),
             nn.BatchNorm3d(128),
             nn.ReLU(inplace=True),
         )
 
         self.link_cov_3 = nn.Sequential(
-            nn.Conv3d(256, 256,
+            nn.Conv3d(256, 128,
             kernel_size=3,
-            stride=(2, 1, 1),
+            stride=(1, 1, 1),
+            padding=(1, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(128),
+            nn.ReLU(inplace=True),
+
+            nn.Conv3d(128, 256,
+            kernel_size=3,
+            stride=(1, 1, 1),
             padding=(1, 1, 1),
             bias=False),
             nn.BatchNorm3d(256),
@@ -231,17 +260,17 @@ class LinkNet(nn.Module):
         
         # expand x2 to 64X8X56X56 
         expand_x2 = torch.unsqueeze(x2, 2)
-        #print("expand_x2:", expand_x2.shape)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        #print("expand_x2:", expand_x2.shape)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        #print("expand_x2:", expand_x2.shape)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) #expand_x2 is 64X8X56X56
-        #print("expand_x2:", expand_x2.shape)
+        # print("expand_x2:", expand_x2.shape)
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        # print("expand_x2:", expand_x2.shape)
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        # print("expand_x2:", expand_x2.shape)
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2) #expand_x2 is 64X8X56X56
+        # print("expand_x2:", expand_x2.shape)
         
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
         expand_x2 = self.link_cov_1(expand_x2)
-       # print("expand_x2:", expand_x2.shape)
+        # print("expand_x2:", expand_x2.shape)
         # add expand_x2 to x3
         x3 = x3 + expand_x2
 
@@ -262,9 +291,9 @@ class LinkNet(nn.Module):
 
         # expand x2 to 128X4X28X28 
         expand_x2 = torch.unsqueeze(x2, 2)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        #print("expand_x2:", expand_x2.shape)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        # print("expand_x2:", expand_x2.shape)
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
         #print("expand_x2:", expand_x2.shape) # expand_x2 is 128X4X28X28
 
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
@@ -291,7 +320,7 @@ class LinkNet(nn.Module):
 
         # expand x2 to 128X4X28X28 
         expand_x2 = torch.unsqueeze(x2, 2)
-        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
+        expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
         #print("expand_x2:", expand_x2.shape) # expand_x2 is 256X2X14X14
 
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
