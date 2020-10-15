@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# download jhmdb 
+# download jhmdb from Google-drive
 fileid="1ZqFneqlFuHiqTSk2npDZfsv28KBd7XjJ"
 filename="jhmdb.zip"
 curl -c ./cookie -s -L "https://drive.google.com/uc?export=download&id=${fileid}" > /dev/null
