@@ -75,8 +75,8 @@ def downsample_basic_block(x, planes, stride):
     zero_pads = torch.Tensor(
         out.size(0), planes - out.size(1), out.size(2), out.size(3),
         out.size(4)).zero_()
-    # if isinstance(out.data, torch.cuda.FloatTensor):
-    #     zero_pads = zero_pads.cuda()
+    if isinstance(out.data, torch.cuda.FloatTensor):
+        zero_pads = zero_pads.cuda()
 
     out = Variable(torch.cat([out.data, zero_pads], dim=1))
 
@@ -169,6 +169,37 @@ class LinkNet(nn.Module):
         self.header = torch.IntTensor([0,0,0,0])
         self.seen = 0
 
+        # link conv layers
+        self.link_cov_1 = nn.Sequential(
+            nn.Conv3d(64, 64,
+            kernel_size=3,
+            stride=(2, 1, 1),
+            padding=(8, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(64),
+            nn.ReLU(inplace=True),
+        )
+
+        self.link_cov_2 = nn.Sequential(
+            nn.Conv3d(128, 128,
+            kernel_size=3,
+            stride=(2, 1, 1),
+            padding=(4, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(128),
+            nn.ReLU(inplace=True),
+        )
+
+        self.link_cov_3 = nn.Sequential(
+            nn.Conv3d(256, 256,
+            kernel_size=3,
+            stride=(2, 1, 1),
+            padding=(1, 1, 1),
+            bias=False),
+            nn.BatchNorm3d(256),
+            nn.ReLU(inplace=True),
+        )
+
     def forward(self, input2D, input3D):
         outputs = dict()
         # input 2D has a shape like 3X224X224, input 3D has a shape like 3X16X224X224
@@ -177,39 +208,40 @@ class LinkNet(nn.Module):
         outputs[0] = x2 
         x2 = self.model_2d[1](x2)# output shape 32X112X112
         outputs[1] = x2 
-        print("Darknet19-conv1:",x2.shape)
+        #print("Darknet19-conv1:",x2.shape)
 
         # Resnet18-conv1
         x3 = self.conv1(input3D)
         x3 = self.bn1(x3)
         x3 = self.relu(x3)
         x3 = self.maxpool(x3) # output shape 64X8X56X56
-        print("Resnet18-conv1:",x3.shape)
+        #print("Resnet18-conv1:",x3.shape)
 
         # Darknet19-conv2
         x2 = self.model_2d[2](x2) 
         outputs[2] = x2 
         x2 = self.model_2d[3](x2) # output shape 64X56X56
         outputs[3] = x2 
-        print("Darknet19-conv2:",x2.shape)
+        #print("Darknet19-conv2:",x2.shape)
 
         # Resnet18-conv2
         x3 = self.layer1(x3) # output shape 64X8X56X56
-        print("Resnet18-conv2:",x3.shape)
+        #print("Resnet18-conv2:",x3.shape)
         
         
         # expand x2 to 64X8X56X56 
         expand_x2 = torch.unsqueeze(x2, 2)
-        print("expand_x2:", expand_x2.shape)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        print("expand_x2:", expand_x2.shape)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        print("expand_x2:", expand_x2.shape)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2) #expand_x2 is 64X8X56X56
-        print("expand_x2:", expand_x2.shape)
+        #print("expand_x2:", expand_x2.shape)
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        #print("expand_x2:", expand_x2.shape)
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        #print("expand_x2:", expand_x2.shape)
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) #expand_x2 is 64X8X56X56
+        #print("expand_x2:", expand_x2.shape)
         
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
-
+        expand_x2 = self.link_cov_1(expand_x2)
+       # print("expand_x2:", expand_x2.shape)
         # add expand_x2 to x3
         x3 = x3 + expand_x2
 
@@ -222,21 +254,23 @@ class LinkNet(nn.Module):
         outputs[6] = x2  
         x2 = self.model_2d[7](x2) # output shape 128X28X28
         outputs[7] = x2 
-        print("Darknet19-conv3:",x2.shape)
+        #print("Darknet19-conv3:",x2.shape)
 
         # Resnet18-conv3
         x3 = self.layer2(x3) # output shape 128X4X28X28
-        print("Resnet18-conv3:",x3.shape)
+        #print("Resnet18-conv3:",x3.shape)
 
         # expand x2 to 128X4X28X28 
         expand_x2 = torch.unsqueeze(x2, 2)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2)
-        print("expand_x2:", expand_x2.shape)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
-        print("expand_x2:", expand_x2.shape) # expand_x2 is 128X4X28X28
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2)
+        #print("expand_x2:", expand_x2.shape)
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
+        #print("expand_x2:", expand_x2.shape) # expand_x2 is 128X4X28X28
 
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
-
+        expand_x2 = self.link_cov_2(expand_x2)
+       # print("expand_x2:", expand_x2.shape)
+        
         # add expand_x2 to x3
         x3 = x3 + expand_x2
         
@@ -249,18 +283,20 @@ class LinkNet(nn.Module):
         outputs[10] = x2  
         x2 = self.model_2d[11](x2) # output shape 256X14X14
         outputs[11] = x2 
-        print("Darknet19-conv4:",x2.shape)
+        #print("Darknet19-conv4:",x2.shape)
 
         # Resnet18-conv4
         x3 = self.layer3(x3) # output shape 256X2X14X14
-        print("Resnet18-conv4:",x3.shape)
+        #print("Resnet18-conv4:",x3.shape)
 
         # expand x2 to 128X4X28X28 
         expand_x2 = torch.unsqueeze(x2, 2)
-        expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
-        print("expand_x2:", expand_x2.shape) # expand_x2 is 256X2X14X14
+        #expand_x2 = torch.cat((expand_x2, expand_x2), 2) 
+        #print("expand_x2:", expand_x2.shape) # expand_x2 is 256X2X14X14
 
         # We can add convolutional layer here. For Resnet18 it is the same size so I use only addition here
+        expand_x2 = self.link_cov_3(expand_x2)
+        #print("expand_x2:", expand_x2.shape)
 
         # add expand_x2 to x3
         x3 = x3 + expand_x2
@@ -279,11 +315,11 @@ class LinkNet(nn.Module):
         outputs[16] = x2 
         x2 = self.model_2d[17](x2) # output shape 512X7X7
         outputs[17] = x2 
-        print("Darknet19-conv5:",x2.shape)
+        #print("Darknet19-conv5:",x2.shape)
 
         # Resnet18-conv5
         x3 = self.layer4(x3) # output shape 512X1X7X7
-        print("Resnet18-conv5:",x3.shape)
+        #print("Resnet18-conv5:",x3.shape)
 
         # Darknet19-conv6
         x2 = self.model_2d[18](x2) 
@@ -296,7 +332,7 @@ class LinkNet(nn.Module):
         outputs[21] = x2 
         x2 = self.model_2d[22](x2)  # output shape 1024X7X7
         outputs[22] = x2 
-        print("Darknet19-conv6:",x2.shape)
+        #print("Darknet19-conv6:",x2.shape)
 
         
         ind = -2

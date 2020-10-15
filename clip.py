@@ -147,13 +147,21 @@ def load_data_detection(base_path, imgpath, train, train_dur, shape, dataset_use
     im_split = imgpath.split('/')
     num_parts = len(im_split)
     im_ind = int(im_split[num_parts-1][0:5])
-    labpath = os.path.join(base_path, 'labels', im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind))
+    
+    if dataset_use == 'jhmdb-21':
+        #print(imgpath)
+        labpath = os.path.join(base_path, 'labels', imgpath.replace("/","_"))
+    else:
+        labpath = os.path.join(base_path, 'labels', im_split[0], im_split[1] ,'{:05d}.txt'.format(im_ind))
 
     img_folder = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1])
+   
     if dataset_use == 'ucf101-24':
         max_num = len(os.listdir(img_folder))
     else:
         max_num = len(os.listdir(img_folder)) - 1
+        if max_num == 41:
+            max_num = 40
 
     clip = []
 
