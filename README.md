@@ -25,7 +25,7 @@ bash ./datasets/download_data.bash
 [Google drive](https://drive.google.com/drive/folders/1_mnYoC0eIHg7YrSUYC3BqNIFwtzKHR4T?usp=sharing)
 
 ```
-
+TO DO
 ```
 
 ## Running Experiment
@@ -44,7 +44,16 @@ bash run_frame_mAP_jhmdb.sh
 
 ### Restaurants dataset (unbalanced)
 ```
+Running Experiment on Restaurants dataset.
+
+TO DO
 ```
+
+```
+Test frame_mAP on Restaurants dataset.
+
+TO DO
+``` 
 
 ## Referecne paper
 
