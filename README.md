@@ -12,15 +12,19 @@ bash ./weights/download_pretrain_weights.bash
 ```
 
 ## Dataset 
-JHMDB-21
+### JHMDB-21
+
 ```
 Note that the JHMDB-21 dataset will be downloaded at ./datasets folder.
 
 
 bash ./datasets/download_data.bash
 ```
+### Restaurants dataset (unbalanced)
+
 
 ## Running Experiment
+### JHMDB-21
 ```
 Running Experiment on JHMDB-21.
 
@@ -33,8 +37,7 @@ Test frame_mAP on JHMDB-21.
 bash run_frame_mAP_jhmdb.sh
 ``` 
 
-
-Restaurants dataset (unbalanced)
+### Restaurants dataset (unbalanced)
 
 ## Referecne paper
 
