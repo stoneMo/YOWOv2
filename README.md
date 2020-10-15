@@ -21,7 +21,11 @@ Note that the JHMDB-21 dataset will be downloaded at ./datasets folder.
 bash ./datasets/download_data.bash
 ```
 ### Restaurants dataset (unbalanced)
+
+[Google drive](https://drive.google.com/drive/folders/1_mnYoC0eIHg7YrSUYC3BqNIFwtzKHR4T?usp=sharing)
+
 ```
+
 ```
 
 ## Running Experiment
