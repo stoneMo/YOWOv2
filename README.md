@@ -19,7 +19,7 @@ The JHMDB-21 dataset can be downloaded at ./datasets folder.
 bash ./datasets/download_data.bash
 ```
 
-### Agot-24 dataset (unbalanced)
+### Agot-24 dataset (imbalanced)
 
 [Google drive](https://drive.google.com/drive/folders/1_mnYoC0eIHg7YrSUYC3BqNIFwtzKHR4T?usp=sharing)
 
