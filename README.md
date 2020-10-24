@@ -5,8 +5,7 @@ https://www.overleaf.com/project/5f6a2f937d051200011e4015
 
 ## 2D&3D Weights
 ```
-Note that the pretrained weights will be downloaded at ./weights folder.
-
+The pretrained weights can be downloaded at ./weights folder.
 
 bash ./weights/download_pretrain_weights.bash
 ```
@@ -15,17 +14,19 @@ bash ./weights/download_pretrain_weights.bash
 ### JHMDB-21
 
 ```
-Note that the JHMDB-21 dataset will be downloaded at ./datasets folder.
-
+The JHMDB-21 dataset can be downloaded at ./datasets folder.
 
 bash ./datasets/download_data.bash
 ```
-### Restaurants dataset (unbalanced)
+
+### Agot-24 dataset (unbalanced)
 
 [Google drive](https://drive.google.com/drive/folders/1_mnYoC0eIHg7YrSUYC3BqNIFwtzKHR4T?usp=sharing)
 
 ```
-TO DO
+The Agot-24 dataset can be downloaded at ./datasets folder.
+
+bash ./datasets/download_agot.bash
 ```
 
 ## Running Experiment
