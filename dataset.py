@@ -13,7 +13,7 @@ import glob
 class listDataset(Dataset):
 
     # clip duration = 8, i.e, for each time 8 frames are considered together
-    def __init__(self, base, root, dataset_use='ucf101-24', shape=None, shuffle=True,
+    def __init__(self, base, root, dataset_use='agot-24', shape=None, shuffle=True,
                  transform=None, target_transform=None, 
                  train=False, seen=0, batch_size=64,
                  clip_duration=16, num_workers=4):
@@ -41,7 +41,7 @@ class listDataset(Dataset):
     def __getitem__(self, index):
         assert index <= len(self), 'index range error'
         imgpath = self.lines[index].rstrip()
-
+        
         self.shape = (224, 224)
 
         if self.train: # For Training
@@ -49,7 +49,7 @@ class listDataset(Dataset):
             hue = 0.1
             saturation = 1.5 
             exposure = 1.5
-
+            
             clip, label = load_data_detection(self.base_path, imgpath,  self.train, self.clip_duration, self.shape, self.dataset_use, jitter, hue, saturation, exposure)
 
         else: # For Testing
@@ -96,6 +96,7 @@ class testData(Dataset):
        self.num_workers = num_workers
 
     def __len__(self):
+        print("sample length:", self.nSamples)
         return self.nSamples
 
     def __getitem__(self, index):

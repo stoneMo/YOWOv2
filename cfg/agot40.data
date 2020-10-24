@@ -1,0 +1,6 @@
+base = datasets/agot40
+train = datasets/agot40/trainlist.txt
+valid = datasets/agot40/testlist.txt
+names = data/agot40.names
+backup = backup
+gpus  = 0

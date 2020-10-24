@@ -68,9 +68,13 @@ def get_clip(root, imgpath, train_dur, dataset):
     im_ind = int(im_split[num_parts - 1][0:5])
     if dataset == 'ucf101-24':
         img_name = os.path.join(class_name, file_name, '{:05d}.jpg'.format(im_ind))
+        labpath = os.path.join(base_path, 'labels', class_name, file_name, '{:05d}.txt'.format(im_ind))
     elif dataset == 'jhmdb-21':
         img_name = os.path.join(class_name, file_name, '{:05d}.png'.format(im_ind))
-    labpath = os.path.join(base_path, 'labels', class_name, file_name, '{:05d}.txt'.format(im_ind))
+        # a bit difference from ucf101-24
+        txt_name = "_".join([class_name, file_name, im_split[-1].replace("png","txt")])
+        labpath = os.path.join(base_path, 'labels', txt_name)
+
     img_folder = os.path.join(base_path, 'rgb-images', class_name, file_name)
     max_num = len(os.listdir(img_folder))
     clip = [] 
@@ -230,7 +234,8 @@ def video_mAP_ucf():
     iou_list = [0.05, 0.1, 0.2, 0.3, 0.5, 0.75]
     for iou_th in iou_list:
         print('iou is: ', iou_th)
-        print(evaluate_videoAP(gt_videos, detected_boxes, CLASSES, iou_th, True))
+        ap_all = evaluate_videoAP(gt_videos, detected_boxes, CLASSES, iou_th, True)
+        print('average video ap is: ', np.mean(ap_all))
 
 
 
