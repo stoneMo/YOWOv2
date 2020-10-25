@@ -21,7 +21,7 @@ bash ./datasets/download_data.bash
 
 ### Agot-24 dataset (imbalanced)
 
-[Google drive](https://drive.google.com/drive/folders/1_mnYoC0eIHg7YrSUYC3BqNIFwtzKHR4T?usp=sharing)
+[Google drive](https://drive.google.com/file/d/1mqzVMR5ud1ZzS5h2kvAOhS_UT6D3PKJ3/view?usp=sharing)
 
 ```
 The Agot-24 dataset can be downloaded at ./datasets folder.
