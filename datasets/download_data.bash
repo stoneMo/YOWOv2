@@ -8,4 +8,3 @@ curl -Lb ./cookie "https://drive.google.com/uc?export=download&confirm=`awk '/do
 
 # unzip 
 unzip -d ./datasets/ jhmdb.zip
-
