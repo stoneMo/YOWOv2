@@ -1,7 +1,7 @@
 # YOWOv2
 
 ## Proposal 
-https://www.overleaf.com/project/5f6a2f937d051200011e4015
+https://www.overleaf.com/read/jdbqkgbfstws
 
 ## 2D&3D Weights
 ```
@@ -43,7 +43,7 @@ Test frame_mAP on JHMDB-21.
 bash run_frame_mAP_jhmdb.sh
 ``` 
 
-### Restaurants dataset (unbalanced)
+### Agot-24 dataset (imbalanced)
 ```
 Running Experiment on Restaurants dataset.
 
