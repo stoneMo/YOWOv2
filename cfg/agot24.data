@@ -1,6 +1,6 @@
-base = datasets/agot
-train = datasets/agot/trainlist.txt
-valid = datasets/agot/testlist.txt
+base = datasets/agot-24
+train = datasets/agot-24/trainlist.txt
+valid = datasets/agot-24/testlist.txt
 names = data/agot.names
 backup = backup
 gpus  = 0
