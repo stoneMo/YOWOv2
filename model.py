@@ -6,92 +6,67 @@ from torch.autograd import Variable
 
 from cfg import *
 from cfam import CFAMBlock
-# from backbones_2d import darknet
-# from backbones_3d import mobilenet, shufflenet, mobilenetv2, shufflenetv2, resnext, resnet
-from linknet import LinkNet
+from backbones_2d import darknet
+from backbones_3d import mobilenet, shufflenet, mobilenetv2, shufflenetv2, resnext, resnet
 
 """
 YOWO model used in spatialtemporal action localization
 """
 
 
-class YOWOL(nn.Module):
+class YOWO(nn.Module):
 
     def __init__(self, opt):
-        super(YOWOL, self).__init__()
+        super(YOWO, self).__init__()
         self.opt = opt
         
-        # ##### 2D Backbone #####
-        # if opt.backbone_2d == "darknet":
-        #     self.backbone_2d = darknet.Darknet("cfg/yolo.cfg")
-        #     num_ch_2d = 425 # Number of output channels for backbone_2d
-        # else:
-        #     raise ValueError("Wrong backbone_2d model is requested. Please select\
-        #                       it from [darknet]")
-        # if opt.backbone_2d_weights:# load pretrained weights on COCO dataset
-        #     self.backbone_2d.load_weights(opt.backbone_2d_weights) 
-
-        # ##### 3D Backbone #####
-        # if opt.backbone_3d == "resnext101":
-        #     self.backbone_3d = resnext.resnext101()
-        #     num_ch_3d = 2048 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "resnet18":
-        #     self.backbone_3d = resnet.resnet18(shortcut_type='A')
-        #     num_ch_3d = 512 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "resnet50":
-        #     self.backbone_3d = resnet.resnet50(shortcut_type='B')
-        #     num_ch_3d = 2048 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "resnet101":
-        #     self.backbone_3d = resnet.resnet101(shortcut_type='B')
-        #     num_ch_3d = 2048 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "mobilenet_2x":
-        #     self.backbone_3d = mobilenet.get_model(width_mult=2.0)
-        #     num_ch_3d = 2048 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "mobilenetv2_1x":
-        #     self.backbone_3d = mobilenetv2.get_model(width_mult=1.0)
-        #     num_ch_3d = 1280 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "shufflenet_2x":
-        #     self.backbone_3d = shufflenet.get_model(groups=3,   width_mult=2.0)
-        #     num_ch_3d = 1920 # Number of output channels for backbone_3d
-        # elif opt.backbone_3d == "shufflenetv2_2x":
-        #     self.backbone_3d = shufflenetv2.get_model(width_mult=2.0)
-        #     num_ch_3d = 2048 # Number of output channels for backbone_3d
-        # else:
-        #     raise ValueError("Wrong backbone_3d model is requested. Please select it from [resnext101, resnet101, \
-        #                      resnet50, resnet18, mobilenet_2x, mobilenetv2_1x, shufflenet_2x, shufflenetv2_2x]")
-        # if opt.backbone_3d_weights:# load pretrained weights on Kinetics-600 dataset
-        #     self.backbone_3d = self.backbone_3d.cuda()
-        #     self.backbone_3d = nn.DataParallel(self.backbone_3d, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
-        #     pretrained_3d_backbone = torch.load(opt.backbone_3d_weights)
-        #     backbone_3d_dict = self.backbone_3d.state_dict()
-        #     pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
-        #     backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict
-        #     self.backbone_3d.load_state_dict(backbone_3d_dict) # 3. load the new state dict
-        #     self.backbone_3d = self.backbone_3d.module # remove the dataparallel wrapper
-
-
-        self.model = LinkNet("cfg/yolo.cfg")
-
-        if opt.backbone_3d_weights:# load pretrained weights on Kinetics-600 dataset
-            # self.model = self.model.cuda()
-            self.model = nn.DataParallel(self.model, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
-            pretrained_3d_backbone = torch.load(opt.backbone_3d_weights, map_location="cpu")
-            # print(pretrained_3d_backbone)
-            backbone_3d_dict = self.model.state_dict()
-
-            pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
-            
-            backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict
-            
-            self.model.load_state_dict(backbone_3d_dict) # 3. load the new state dict
-            
-            self.model = self.model.module # remove the dataparallel wrapper
-
-            num_ch_3d = 512 # Number of output channels for backbone_3d
-
-        if opt.backbone_2d_weights:# load pretrained weights on COCO dataset        
-            self.model.load_weights(opt.backbone_2d_weights)
+        ##### 2D Backbone #####
+        if opt.backbone_2d == "darknet":
+            self.backbone_2d = darknet.Darknet("cfg/yolo.cfg")
             num_ch_2d = 425 # Number of output channels for backbone_2d
+        else:
+            raise ValueError("Wrong backbone_2d model is requested. Please select\
+                              it from [darknet]")
+        if opt.backbone_2d_weights:# load pretrained weights on COCO dataset
+            self.backbone_2d.load_weights(opt.backbone_2d_weights) 
+
+        ##### 3D Backbone #####
+        if opt.backbone_3d == "resnext101":
+            self.backbone_3d = resnext.resnext101()
+            num_ch_3d = 2048 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "resnet18":
+            self.backbone_3d = resnet.resnet18(shortcut_type='A')
+            num_ch_3d = 512 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "resnet50":
+            self.backbone_3d = resnet.resnet50(shortcut_type='B')
+            num_ch_3d = 2048 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "resnet101":
+            self.backbone_3d = resnet.resnet101(shortcut_type='B')
+            num_ch_3d = 2048 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "mobilenet_2x":
+            self.backbone_3d = mobilenet.get_model(width_mult=2.0)
+            num_ch_3d = 2048 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "mobilenetv2_1x":
+            self.backbone_3d = mobilenetv2.get_model(width_mult=1.0)
+            num_ch_3d = 1280 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "shufflenet_2x":
+            self.backbone_3d = shufflenet.get_model(groups=3,   width_mult=2.0)
+            num_ch_3d = 1920 # Number of output channels for backbone_3d
+        elif opt.backbone_3d == "shufflenetv2_2x":
+            self.backbone_3d = shufflenetv2.get_model(width_mult=2.0)
+            num_ch_3d = 2048 # Number of output channels for backbone_3d
+        else:
+            raise ValueError("Wrong backbone_3d model is requested. Please select it from [resnext101, resnet101, \
+                             resnet50, resnet18, mobilenet_2x, mobilenetv2_1x, shufflenet_2x, shufflenetv2_2x]")
+        if opt.backbone_3d_weights:# load pretrained weights on Kinetics-600 dataset
+            self.backbone_3d = self.backbone_3d.cuda()
+            self.backbone_3d = nn.DataParallel(self.backbone_3d, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
+            pretrained_3d_backbone = torch.load(opt.backbone_3d_weights)
+            backbone_3d_dict = self.backbone_3d.state_dict()
+            pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
+            backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict
+            self.backbone_3d.load_state_dict(backbone_3d_dict) # 3. load the new state dict
+            self.backbone_3d = self.backbone_3d.module # remove the dataparallel wrapper
 
         ##### Attention & Final Conv #####
         self.cfam = CFAMBlock(num_ch_2d+num_ch_3d, 1024)
@@ -100,11 +75,13 @@ class YOWOL(nn.Module):
         self.seen = 0
 
 
+
     def forward(self, input):
         x_3d = input # Input clip
         x_2d = input[:, :, -1, :, :] # Last frame of the clip that is read
 
-        x_2d, x_3d = self.model(x_2d, x_3d)
+        x_2d = self.backbone_2d(x_2d)
+        x_3d = self.backbone_3d(x_3d)
         x_3d = torch.squeeze(x_3d, dim=2)
 
         x = torch.cat((x_3d, x_2d), dim=1)
@@ -138,18 +115,3 @@ def get_fine_tuning_parameters(model, opt):
             parameters.append({'params': v, 'lr': 0.0})
     
     return parameters
-
-if __name__ == "__main__":
-    
-    from opts import parse_opts
-    # Training settings
-    opt = parse_opts()
-
-    model = YOWOL(opt)
-    print(model)
-
-    x = torch.randn(1, 3, 16, 224, 224)
-
-    y = model(x)
-
-    print(y.shape)
