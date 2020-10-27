@@ -242,11 +242,18 @@ def test(epoch):
                         os.mkdir('ucf_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
-                else:
+                elif dataset_use == 'jhmdb-21':
                     detection_path = os.path.join('jhmdb_detections', 'detections_'+str(epoch), frame_idx[i])
                     current_dir = os.path.join('jhmdb_detections', 'detections_'+str(epoch))
                     if not os.path.exists('jhmdb_detections'):
                         os.mkdir('jhmdb_detections')
+                    if not os.path.exists(current_dir):
+                        os.mkdir(current_dir)
+                else:  # agot-24
+                    detection_path = os.path.join('agot_detections', 'detections_'+str(epoch), frame_idx[i])
+                    current_dir = os.path.join('agot_detections', 'detections_'+str(epoch))
+                    if not os.path.exists('agot_detections'):
+                        os.mkdir('agot_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
 
