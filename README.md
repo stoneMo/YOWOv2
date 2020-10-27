@@ -47,7 +47,7 @@ bash run_frame_mAP_jhmdb.sh
 ```
 Running Experiment on Restaurants dataset.
 
-TO DO
+sh run_agot-24.sh
 ```
 
 ```
@@ -56,6 +56,6 @@ Test frame_mAP on Restaurants dataset.
 TO DO
 ``` 
 
-## Referecne paper
+## Reference paper
 
 YOWO: https://github.com/wei-tim/YOWO
