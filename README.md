@@ -22,7 +22,7 @@ bash ./datasets/download_data.bash
 ### Agot-24 dataset (imbalanced)
 
 [[agot-24.zip]](https://drive.google.com/file/d/1xvO5qLBm3Ut0T46R16Cp3wP7I1wHOn4z/view?usp=sharing)  
-[[groundtruths_agot.zip]](https://drive.google.com/file/d/1FsXRXXOfocwMPc0zj6oS0yaF58f6eeW4/view?usp=sharing)
+[[groundtruths_agot.zip]](https://drive.google.com/file/d/1Xwxj9rQClc2yVACrsDzttT9ZuLqjS53L/view?usp=sharing)
 
 ```
 The Agot-24 dataset can be downloaded at ./datasets folder.
