@@ -39,7 +39,7 @@ bash ./evaluation/Object-Detection-Metrics/download_groundtruths_agot.bash
 ```
 Running Experiment on JHMDB-21.
 
-sh run_jhmdb-21.sh
+bash run_jhmdb-21.sh
 ``` 
 
 ```
@@ -50,15 +50,15 @@ bash run_frame_mAP_jhmdb.sh
 
 ### Agot-24 dataset (imbalanced)
 ```
-Running Experiment on Restaurants dataset.
+Running Experiment on Agot dataset.
 
-sh run_agot-24.sh
+bash run_agot-24.sh
 ```
 
 ```
-Test frame_mAP on Restaurants dataset.
+Test frame_mAP on Agot dataset.
 
-TO DO
+bash run_frame_mAP_agot.sh
 ``` 
 
 ## Reference paper
