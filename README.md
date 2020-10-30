@@ -28,6 +28,10 @@ bash ./datasets/download_data.bash
 The Agot-24 dataset can be downloaded at ./datasets folder.
 
 bash ./datasets/download_agot.bash
+
+The corresponding groundtruth file can be downloaded at ./evaluation/Object-Detection-Metrics folder.
+
+bash ./evaluation/Object-Detection-Metrics/download_groundtruths_agot.bash
 ```
 
 ## Running Experiment
