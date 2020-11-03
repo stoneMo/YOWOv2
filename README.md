@@ -1,5 +1,9 @@
 # YOWOv2
 
+## Branches
+- Main branch runs customized YOWO-linknet models.
+- Baseline branch runs baseline YOWO models.
+
 ## Proposal 
 https://www.overleaf.com/read/jdbqkgbfstws
 
