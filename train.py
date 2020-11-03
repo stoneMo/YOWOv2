@@ -17,13 +17,13 @@ from utils import *
 from cfg import parse_cfg
 from region_loss import RegionLoss
 
-from model import YOWO, get_fine_tuning_parameters
+from model import YOWOL, get_fine_tuning_parameters
 
 # Training settings
 opt = parse_opts()
 # which dataset to use
 dataset_use   = opt.dataset
-assert dataset_use == 'agot-24' or dataset_use == 'jhmdb-21', 'invalid dataset'
+assert dataset_use == 'ucf101-24' or dataset_use == 'jhmdb-21', 'invalid dataset'
 # path for dataset of training and validation
 datacfg       = opt.data_cfg
 # path for cfg file
@@ -86,7 +86,7 @@ if use_cuda:
     torch.cuda.manual_seed(seed)
 
 # Create model
-model = YOWO(opt)
+model = YOWOL(opt)
 
 model       = model.cuda()
 model       = nn.DataParallel(model, device_ids=None) # in multi-gpu case
@@ -117,7 +117,9 @@ processed_batches = model.seen//batch_size
 
 init_width        = int(net_options['width'])
 init_height       = int(net_options['height'])
-init_epoch        = model.seen//nsamples
+init_epoch        = model.seen//nsamples 
+
+
 
 def adjust_learning_rate(optimizer, batch):
     lr = learning_rate
@@ -242,18 +244,11 @@ def test(epoch):
                         os.mkdir('ucf_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
-                elif dataset_use == 'jhmdb-21':
+                else:
                     detection_path = os.path.join('jhmdb_detections', 'detections_'+str(epoch), frame_idx[i])
                     current_dir = os.path.join('jhmdb_detections', 'detections_'+str(epoch))
                     if not os.path.exists('jhmdb_detections'):
                         os.mkdir('jhmdb_detections')
-                    if not os.path.exists(current_dir):
-                        os.mkdir(current_dir)
-                else:  # agot-24
-                    detection_path = os.path.join('agot_detections', 'detections_'+str(epoch), frame_idx[i])
-                    current_dir = os.path.join('agot_detections', 'detections_'+str(epoch))
-                    if not os.path.exists('agot_detections'):
-                        os.mkdir('agot_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
 
