@@ -1,9 +1,6 @@
 
 # coding: utf-8
 
-# In[1]:
-
-
 import cv2
 import numpy as np
 import math   
@@ -13,8 +10,9 @@ from operator import itemgetter
 
 import os
 
-
-# In[2]:
+from sklearn.cluster import KMeans
+import random
+import seaborn as sns
 
 
 def get_labels(filePath):
@@ -46,9 +44,6 @@ def get_labels(filePath):
 #all_labels = get_labels(filePath)
 
 
-# In[125]:
-
-
 def mkdir_label(labels, root, labels_root, images_root ):
     '''
     DEFINITION : This function creates a UCF101-24 style directory structure
@@ -73,9 +68,6 @@ def mkdir_label(labels, root, labels_root, images_root ):
             os.mkdir(image_path)
             
 #mkdir_label(all_labels, root, labels_root, images_root)
-
-
-# In[3]:
 
 
 def get_clips(filePath):
@@ -108,9 +100,6 @@ def get_clips(filePath):
 #total_videos, all_clips = get_clips(filePath)
 
 
-# In[4]:
-
-
 def generate_ids(all_clips):
     '''
     DEFINITION : This function creates id's for labels/actions
@@ -126,8 +115,6 @@ def generate_ids(all_clips):
         
 #label_ids = generate_ids(all_clips)
 
-
-# In[2]:
 
 
 def create_labels(filePath, labels_root, label_ids, all_labels, x_scale, y_scale):
@@ -194,9 +181,6 @@ def create_labels(filePath, labels_root, label_ids, all_labels, x_scale, y_scale
 #frames_for_video, label_file_counter = create_labels(filePath, labels_root, label_ids, all_labels,  x_scale, y_scale)
 
 
-# In[1]:
-
-
 def video_to_frame(filePath, videoPath, images_root, frames_for_video, all_labels, target_size_x, target_size_y):
     '''
     This method is not naive. Takes a lot of time. But the only way to do the task on a machine without a GPU
@@ -249,4 +233,292 @@ def video_to_frame(filePath, videoPath, images_root, frames_for_video, all_label
         
         
 #video_to_frame(filePath, videoPath, images_root, frames_for_video, all_labels, target_size_x, target_size_y)
+
+
+def removeDS(array):
+    if '.DS_Store' in array:
+        array.remove('.DS_Store')
+    return array
+
+
+def get_Nclasses_cutoff(path, N):
+    '''
+    This function is used to get the number of clips contained in the top N classes when sorted by number of clips.
+    '''
+    labels = os.listdir(path)
+    labels = removeDS(labels)
+        
+    clip_nums = []
+    for label in labels:
+        label_path = path + label + '/'
+        clips = os.listdir(label_path)
+        clips = removeDS(clips)
+        clip_nums.append(len(clips))
+            
+
+    clip_nums.sort(reverse=True)
+    cutoff = clip_nums[N-1]
+    
+    return cutoff
+
+
+def build_clipref_list(path, list_root, cutoff):
+    '''
+    This function is used to build training and testing data list we're gonna use. 
+    The clip reference (class_group_clip) will be stored in txt file.
+    '''
+    labels = os.listdir(path)
+    labels = removeDS(labels)
+
+    train_refs_full = []
+    test_refs_full = []
+
+    for label in labels:
+        label_path = path + label + '/'
+        clips = os.listdir(label_path)
+        clips = removeDS(clips)
+        
+        num_clips = len(clips)
+        
+        if num_clips >= cutoff:###HOW TO HANDLE IF MULTIPLE FOLDERS HAVE SAME NUMBER OF FILES
+            
+            train_num = int(num_clips*train_ratio) # round down, or there might be no data in testing at all
+
+            if clips: # if not empty
+                train_refs = clips[0:train_num]
+                test_refs = clips[train_num::]
+
+                train_refs = [label + '/' + s for s in train_refs]
+                test_refs = [label + '/' + s for s in test_refs]
+                
+            else:
+                train_refs = []
+                test_refs = []
+
+            print(label + ':')
+            print('total clips: ' + str(len(clips)))
+            print('training clips: ' + str(len(train_refs)))
+            print('testing clips: ' + str(len(test_refs)))
+            print('===========================')
+
+            train_refs_full += train_refs
+            test_refs_full += test_refs
+
+    delimiter = '\n'
+    train_str = delimiter.join(train_refs_full)
+    test_str = delimiter.join(test_refs_full)
+
+    train_path = list_root + 'trainlist01.txt'
+    test_path = list_root + 'testlist01.txt'
+
+    file = open(train_path,'w+') 
+    file.write(train_str)
+    file.close()
+    file = open(test_path,'w+')
+    file.write(test_str)
+    file.close()
+
+
+
+def build_labelref_list(path, list_root, cutoff):
+    '''
+    This function is used to build training and testing data list we're gonna use. 
+    The label path (class_group_clip/frameidx.txt) will be stored in txt file.
+    '''
+    labels = os.listdir(path)
+
+    train_frames_full = []
+    test_frames_full = []
+
+    for label in labels:
+        if label == '.DS_Store':
+            continue
+        label_path = path + label + '/'
+        clips = os.listdir(label_path)
+        num_clips = len(clips)
+        
+        if num_clips >= cutoff:
+            
+            train_num = int(num_clips*train_ratio) # round down, or there might be no data in testing at all
+
+            if clips: # if not empty
+                train_refs = clips[0:train_num]
+                test_refs = clips[train_num::]
+                
+                train_paths = [label + '/' + s for s in train_refs]
+                test_paths = [label + '/' + s for s in test_refs]
+                
+                for i in range(len(train_refs)):
+                    clip_ref = train_refs[i] # class_g_c
+                    clip_path = label_path + clip_ref + '/'
+                    frames = os.listdir(clip_path)
+                    
+                    for frame in frames:
+                        frame_path = train_paths[i] + '/' + frame
+                        train_frames_full.append(frame_path)
+                        
+                for i in range(len(test_refs)):
+                    clip_ref = test_refs[i] # class_g_c
+                    clip_path = label_path + clip_ref + '/'
+                    frames = os.listdir(clip_path)
+                    
+                    for frame in frames:
+                        frame_path = test_paths[i] + '/' + frame
+                        test_frames_full.append(frame_path)
+
+            else:
+                train_frames_full = []
+                test_frames_full = []
+
+            print(label + ':')
+            print('total clips: ' + str(len(clips)))
+            print('training clips: ' + str(len(train_refs)))
+            print('testing clips: ' + str(len(test_refs)))
+            print('===========================')
+
+    delimiter = '\n'
+    train_str = delimiter.join(train_frames_full)
+    test_str = delimiter.join(test_frames_full)
+
+    train_path = list_root + 'trainlist.txt'
+    test_path = list_root + 'testlist.txt'
+
+    file = open(train_path,'w+') 
+    file.write(train_str)
+    file.close()
+    file = open(test_path,'w+')
+    file.write(test_str)
+    file.close()
+
+
+def readFile(path):
+    with open(path, "rt") as f:
+        return f.read()
+
+
+def writeFile(path, contents):
+    with open(path, "wt") as f:
+        f.write(contents)
+
+
+def gen_groundtruth_folder(testlist_path, label_path, gt_path):
+    testlist = readFile(testlist_path).split('\n')
+    print("len of testlist:", len(testlist))
+    i = 0
+    for row in testlist:
+        if i % 1000==0:
+            print("processing row",i)
+        content = readFile(label_path + row)
+        gt_file = row.replace("/","_")
+        writeFile(gt_path+gt_file, content)
+        i += 1
+
+
+def get_num_clips(path):
+    '''
+    This function calculates number of clips for each action.
+    '''
+    labels = os.listdir(path)
+    num_clips = []
+    for label in labels:
+        if label == '.DS_Store':
+            continue
+        label_path = path + label + '/'
+        clips = os.listdir(label_path)
+        num_clips.append(len(clips))
+    return(num_clips, labels)
+
+
+def read_labels(path, cutoff):
+    '''
+    This function is used to get the number of clips contained in the top N classes when sorted by number of clips.
+    '''
+    labels = os.listdir(path)
+    labels = removeDS(labels)
+    
+    bounding_boxes = []
+        
+    for label in labels:
+        label_path = path + label + '/'
+        clips = os.listdir(label_path)
+        clips = removeDS(clips)
+
+        if len(clips) > cutoff:
+            for clip in clips:
+                clip_path = label_path + clip
+                files = os.listdir(clip_path)
+                files = removeDS(files)
+                for file in files:
+                    file_path = clip_path + '/' + file
+                    data = np.loadtxt(file_path)
+                    #assuming (x1, y1), (x2, y2)
+                    width = (data[3] - data[1])/224
+                    height = (data[4] - data[2])/224
+                    bounding_boxes.append([width, height])
+    
+    return bounding_boxes
+
+
+def jaccard_index(box1, box2):
+    num = min(box1[0], box2[0]) * min(box1[1], box2[1])
+    den = box1[0]*box1[1] + box2[0]* box2[1] - num
+    
+    distance = num/den
+    
+    return distance
+
+
+def euclidean_dist(box1, box2):
+    distance = (box1[0] - box2[0])**2 + (box1[1] - box2[1])**2
+    dist = distance ** 0.5 
+    
+    return dist
+
+
+def initialize(K):
+    cluster_mean = []
+    for i in range(K):
+        cluster_mean.append([random.random()*0.2, random.random()*0.2])
+        
+    return cluster_mean
+    
+    
+def find_clusters(bounding_boxes, cluster_mean, K):
+
+    cluster = np.zeros(len(bounding_boxes), dtype = int)
+    
+    for i in range(len(bounding_boxes)):
+        
+        min_dist = 1000
+        for k in range(K):
+            distance = jaccard_index(bounding_boxes[i], cluster_mean[k])
+            #distance = euclidean_dist(bounding_boxes[i], cluster_mean[k])
+            if distance < min_dist:
+                min_dist = distance
+                cluster[i] = k
+
+    return cluster
+            
+            
+def new_cluster(bounding_boxes, cluster, old_cluster_mean, K):
+
+    cluster_mean = []
+    
+    w_sum = np.zeros(K)
+    h_sum = np.zeros(K)
+    count = np.zeros(K)
+    
+    for i in range(len(bounding_boxes)):
+        w_sum[cluster[i]] += bounding_boxes[i][0]
+        h_sum[cluster[i]] += bounding_boxes[i][1]
+        count[cluster[i]] += 1
+        
+    for k in range(K):
+        if count[k] != 0:
+            cluster_mean.append([w_sum[k]/count[k], h_sum[k]/count[k]])
+        else:
+            cluster_mean.append([old_cluster_mean[k][0], old_cluster_mean[k][1]])
+        
+    
+    return cluster_mean
 
