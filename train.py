@@ -37,6 +37,8 @@ basepath      = data_options['base']
 trainlist     = data_options['train']
 testlist      = data_options['valid']
 backupdir     = data_options['backup']
+print("backupdir",backupdir)
+
 # number of training samples
 nsamples      = file_lines(trainlist)
 gpus          = data_options['gpus']  # e.g. 0,1,2,3
@@ -79,7 +81,8 @@ iou_thresh    = 0.5
 
 if not os.path.exists(backupdir):
     os.mkdir(backupdir)
-    
+print("backupdir exists",os.path.exists(backupdir))
+
 torch.manual_seed(seed)
 if use_cuda:
     os.environ['CUDA_VISIBLE_DEVICES'] = gpus
@@ -242,11 +245,18 @@ def test(epoch):
                         os.mkdir('ucf_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
-                else:
+                elif dataset_use == 'jhmdb-21':
                     detection_path = os.path.join('jhmdb_detections', 'detections_'+str(epoch), frame_idx[i])
                     current_dir = os.path.join('jhmdb_detections', 'detections_'+str(epoch))
                     if not os.path.exists('jhmdb_detections'):
                         os.mkdir('jhmdb_detections')
+                    if not os.path.exists(current_dir):
+                        os.mkdir(current_dir)
+                else:  # agot-24
+                    detection_path = os.path.join('/content/gdrive/My Drive/project/agot_yowo_baseline', 'agot_detections', 'detections_'+str(epoch), frame_idx[i])
+                    current_dir = os.path.join('/content/gdrive/My Drive/project/agot_yowo_baseline', 'agot_detections', 'detections_'+str(epoch))
+                    if not os.path.exists('/content/gdrive/My Drive/project/agot_yowo_baseline/agot_detections'):
+                        os.mkdir('/content/gdrive/My Drive/project/agot_yowo_baseline/agot_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
 
