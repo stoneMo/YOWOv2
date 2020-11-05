@@ -11,7 +11,7 @@ https://www.overleaf.com/read/jdbqkgbfstws
 ```
 The pretrained weights can be downloaded at ./weights folder.
 
-bash ./weights/download_pretrain_weights.bash
+bash ./weights/download_pretrain.bash
 ```
 
 ## Dataset 
