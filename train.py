@@ -253,10 +253,10 @@ def test(epoch):
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
                 else:  # agot-24
-                    detection_path = os.path.join('/content/gdrive/My Drive/project/agot_yowo_baseline', 'agot_detections', 'detections_'+str(epoch), frame_idx[i])
-                    current_dir = os.path.join('/content/gdrive/My Drive/project/agot_yowo_baseline', 'agot_detections', 'detections_'+str(epoch))
-                    if not os.path.exists('/content/gdrive/My Drive/project/agot_yowo_baseline/agot_detections'):
-                        os.mkdir('/content/gdrive/My Drive/project/agot_yowo_baseline/agot_detections')
+                    detection_path = os.path.join('agot_detections', 'detections_'+str(epoch), frame_idx[i])
+                    current_dir = os.path.join('agot_detections', 'detections_'+str(epoch))
+                    if not os.path.exists('agot_detections'):
+                        os.mkdir('agot_detections')
                     if not os.path.exists(current_dir):
                         os.mkdir(current_dir)
 
