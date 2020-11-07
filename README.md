@@ -1,4 +1,6 @@
-# YOWOv2
+# Spatiotemporal Action Recognition in Videos
+
+Shentong Mo, Xiaoqing Tan, Jingfei Xia, Pinxu Ren.
 
 ## Branches
 - Main branch runs customized YOWO-linknet models.
