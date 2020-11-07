@@ -61,12 +61,14 @@ Running Experiment on Agot dataset.
 bash run_agot-24.sh
 ```
 
+Move the detection folder with the best result to ./evaluation/Object-Detection-Metrics folder.  
+Make sure both the detection folder and the groundtruth folder are under the ./evaluation/Object-Detection-Metrics folder.  
 ```
 Test frame_mAP on Agot dataset.
 
 bash run_frame_mAP_agot.sh
 ``` 
 
-## Reference paper
+## Acknowledgements
 
-YOWO: https://github.com/wei-tim/YOWO
+The repository first started as a fork of the [YOWO](https://github.com/wei-tim/YOWO) repository -- we owe a great deal of thanks to the YOWO authors for their releasing YOWO codebase.
