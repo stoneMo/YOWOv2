@@ -71,4 +71,4 @@ bash run_frame_mAP_agot.sh
 
 ## Acknowledgements
 
-The repository first started as a fork of the [YOWO](https://github.com/wei-tim/YOWO) repository -- we owe a great deal of thanks to the YOWO authors for their releasing YOWO codebase.
+The repository first started as a fork of the [YOWO](https://github.com/wei-tim/YOWO) repository -- we owe a great deal of thanks to the YOWO authors for releasing their codebase.
