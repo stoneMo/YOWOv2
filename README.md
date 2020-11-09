@@ -16,6 +16,11 @@ The pretrained weights can be downloaded at ./weights folder.
 bash ./weights/download_pretrain.bash
 ```
 
+## CenterNet structure
+```
+TBD
+```
+
 ## Dataset 
 ### JHMDB-21
 
