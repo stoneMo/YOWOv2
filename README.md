@@ -1,10 +1,8 @@
 # Spatiotemporal Action Recognition in Videos
 
-Shentong Mo, Xiaoqing Tan, Jingfei Xia, Pinxu Ren.
-
 ## Branches
 - Main branch runs customized YOWO-linknet models.
-- Baseline branch runs baseline YOWO models.
+- Baseline branch runs baseline YOWO models and YOWO with customized anchor boxes using K-means clustering.
 
 ## Project report 
 https://www.overleaf.com/read/jdbqkgbfstws
@@ -14,11 +12,6 @@ https://www.overleaf.com/read/jdbqkgbfstws
 The pretrained weights can be downloaded at ./weights folder.
 
 bash ./weights/download_pretrain.bash
-```
-
-## CenterNet structure
-```
-TBD
 ```
 
 ## Dataset 
