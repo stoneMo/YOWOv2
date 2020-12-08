@@ -5,7 +5,7 @@ import os
 import torch
 from PIL import Image
 import numpy as np
-from utils import *
+from utils3D import *
 import cv2
 
 
@@ -159,11 +159,12 @@ def load_data_detection(base_path, imgpath, train, train_dur, shape, dataset_use
     if dataset_use == 'ucf101-24':
         max_num = len(os.listdir(img_folder))
     else:
-        max_num = len(os.listdir(img_folder)) - 1
+        max_num = len(os.listdir(img_folder)) // 4 - 1
         if max_num == 41:
             max_num = 40
 
     clip = []
+    clip_path = []
 
     ### We change downsampling rate throughout training as a ###
     ### temporal augmentation, which brings around 1-2 frame ###
@@ -183,34 +184,36 @@ def load_data_detection(base_path, imgpath, train, train_dur, shape, dataset_use
         if dataset_use == 'ucf101-24':
             path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}.jpg'.format(i_temp))
         else:
-            path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}.png'.format(i_temp))
+            path_origin = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}.png'.format(i_temp))
+            path_tmp = os.path.join(base_path, 'rgb-images', im_split[0], im_split[1] ,'{:05d}_pred_hmhp.png'.format(i_temp))
 
         clip.append(Image.open(path_tmp).convert('RGB'))
+        clip_path.append(path_origin)
 
-    if train: # Apply augmentation
-        clip,flip,dx,dy,sx,sy = data_augmentation(clip, shape, jitter, hue, saturation, exposure)
-        label = fill_truth_detection(labpath, clip[0].width, clip[0].height, flip, dx, dy, 1./sx, 1./sy)
-        label = torch.from_numpy(label)
+    # if train: # Apply augmentation
+    #     clip,flip,dx,dy,sx,sy = data_augmentation(clip, shape, jitter, hue, saturation, exposure)
+    #     label = fill_truth_detection(labpath, clip[0].width, clip[0].height, flip, dx, dy, 1./sx, 1./sy)
+    #     label = torch.from_numpy(label)
 
-    else: # No augmentation
-        label = torch.zeros(50*5)
-        try:
-            tmp = torch.from_numpy(read_truths_args(labpath, 8.0/clip[0].width).astype('float32'))
-        except Exception:
-            tmp = torch.zeros(1,5)
+    # else: # No augmentation
+    label = torch.zeros(50*5)
+    try:
+        tmp = torch.from_numpy(read_truths_args(labpath, 8.0/clip[0].width).astype('float32'))
+    except Exception:
+        tmp = torch.zeros(1,5)
 
-        tmp = tmp.view(-1)
-        tsz = tmp.numel()
+    tmp = tmp.view(-1)
+    tsz = tmp.numel()
 
-        if tsz > 50*5:
-            label = tmp[0:50*5]
-        elif tsz > 0:
-            label[0:tsz] = tmp
+    if tsz > 50*5:
+        label = tmp[0:50*5]
+    elif tsz > 0:
+        label[0:tsz] = tmp
 
     if train:
         return clip, label
     else:
-        return im_split[0] + '_' +im_split[1] + '_' + im_split[2], clip, label
+        return im_split[0] + '_' +im_split[1] + '_' + im_split[2], clip, label, clip_path
 
 def load_data_detection_test(root, imgpath, train_dur, num_samples):
 
