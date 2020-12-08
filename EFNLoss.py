@@ -4,19 +4,12 @@ import torch.nn.functional as F
 '''
 User Menu for Agot 24:
 update region_loss.py by adding: 
-
 "from EFNLoss import EffectiveNumWeightLoss"
-
 And add the following lines at around line 259
         "# ((1-beta)/(1-beta^n))*Loss(labels, logits)
         #EffectiveNumWeightLoss(cls, tcls, beta , gamma(for focal loss))
-        loss_cls = self.class_scale * EffectiveNumWeightLoss(cls, tcls, 0.7, 2)""
+        loss_cls = self.class_scale * EffectiveNumWeightLoss(cls, tcls, 0.7, 2)
 '''
-
-
-
-
-
 
 def focal_loss(labels, logits, alpha, gamma):
     """Compute the focal loss between `logits` and the ground truth `labels`.
@@ -87,30 +80,31 @@ def CB_loss(labels, logits, samples_per_cls, no_of_classes, loss_type, beta, gam
     return cb_loss
 
 
-spcls = [4959,
-        736,
-        838,
-        1015,
-        2209,
-        9414,
-        3215,
-        2538,
-        7187,
-        954,
-        4687,
-        7734,
-        3195,
-        3234,
+spcls =[7187,
         5084,
-        1121,
-        845,
-        1327,
-        905,
         1015,
-        1332,
-        10407,
+        9414,
+        3234,
+        2538,
+        954,
+        905,
+        4959,
         2782,
-        15239]
+        1327,
+        7734,
+        4687,
+        3215,
+        10407,
+        593,
+        736,
+        3195,
+        514,
+        845,
+        403,
+        2209,
+        15239,
+        838]
+
 
 def EffectiveNumWeightLoss(logits,labels, beta, gamma):
     return CB_loss(labels, logits, spcls, 24, 'focal', beta, gamma)
