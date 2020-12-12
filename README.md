@@ -1,12 +1,13 @@
 # Spatiotemporal Action Recognition in Videos
 
+Spatiotemporal action recognition deals with locating and classifying actions in videos. Motivated by the latest state-of-the-art real-time object detector You Only Watch Once (YOWO), we aim to modify its structure to increase action detection precision and reduce computational time. Specifically, we propose four novel approaches in attempts to improve YOWO and address the imbalanced class issue in videos by modifying the loss function. We consider two moderate-sized datasets to apply our modification of YOWO - the popular Joint-annotated Human Motion Data Base (J-HMDB-21) and a private dataset of restaurant video footage provided by a Carnegie Mellon University-based startup, \blue{\href{https://www.agot.ai/}{Agot.AI}}. The latter involves fast-moving actions with small objects as well as unbalanced data classes, making the task of action localization more challenging. 
+
+[[Report]](https://www.overleaf.com/read/jdbqkgbfstws)
+[[Video]](https://www.youtube.com/watch?v=WIr3QHQWmVs)
+
 ## Branches
 - Main branch runs customized YOWO-linknet models.
 - Baseline branch runs baseline YOWO models and YOWO with customized anchor boxes using K-means clustering.
-
-## Project report and video
-[[Report]](https://www.overleaf.com/read/jdbqkgbfstws)
-[[Video]](https://www.youtube.com/watch?v=WIr3QHQWmVs)
 
 ## 2D&3D Weights
 ```
