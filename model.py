@@ -7,7 +7,7 @@ from torch.autograd import Variable
 from cfg import *
 from cfam import CFAMBlock
 # from backbones_2d import darknet
-# from backbones_3d import mobilenet, shufflenet, mobilenetv2, shufflenetv2, resnext, resnet
+from backbones_3d import mobilenet, shufflenet, mobilenetv2, shufflenetv2, resnext, resnet
 from linknet import LinkNet
 
 """
@@ -15,10 +15,10 @@ YOWO model used in spatialtemporal action localization
 """
 
 
-class YOWOL(nn.Module):
+class Center3D(nn.Module):
 
     def __init__(self, opt):
-        super(YOWOL, self).__init__()
+        super(Center3D, self).__init__()
         self.opt = opt
         
         # ##### 2D Backbone #####
@@ -70,47 +70,70 @@ class YOWOL(nn.Module):
         #     self.backbone_3d = self.backbone_3d.module # remove the dataparallel wrapper
 
 
-        self.model = LinkNet("cfg/yolo.cfg")
+        # self.model = LinkNet("cfg/yolo.cfg")
 
+        self.backbone_3d = resnet.resnet18(shortcut_type='A')
+        num_ch_3d = 512 # Number of output channels for backbone_3d
         if opt.backbone_3d_weights:# load pretrained weights on Kinetics-600 dataset
-            # self.model = self.model.cuda()
-            self.model = nn.DataParallel(self.model, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
-            pretrained_3d_backbone = torch.load(opt.backbone_3d_weights, map_location="cpu")
-            # print(pretrained_3d_backbone)
-            backbone_3d_dict = self.model.state_dict()
-
+            self.backbone_3d = self.backbone_3d.cuda()
+            self.backbone_3d = nn.DataParallel(self.backbone_3d, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
+            pretrained_3d_backbone = torch.load(opt.backbone_3d_weights)
+            backbone_3d_dict = self.backbone_3d.state_dict()
             pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
-            
             backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict
+            self.backbone_3d.load_state_dict(backbone_3d_dict) # 3. load the new state dict
+            self.backbone_3d = self.backbone_3d.module # remove the dataparallel wrapper
+
+
+        # if opt.backbone_3d_weights:# load pretrained weights on Kinetics-600 dataset
+        #     # self.model = self.model.cuda()
+        #     self.model = nn.DataParallel(self.model, device_ids=None) # Because the pretrained backbone models are saved in Dataparalled mode
+        #     pretrained_3d_backbone = torch.load(opt.backbone_3d_weights, map_location="cpu")
+        #     # print(pretrained_3d_backbone)
+        #     backbone_3d_dict = self.model.state_dict()
+
+        #     pretrained_3d_backbone_dict = {k: v for k, v in pretrained_3d_backbone['state_dict'].items() if k in backbone_3d_dict} # 1. filter out unnecessary keys
             
-            self.model.load_state_dict(backbone_3d_dict) # 3. load the new state dict
+        #     backbone_3d_dict.update(pretrained_3d_backbone_dict) # 2. overwrite entries in the existing state dict
             
-            self.model = self.model.module # remove the dataparallel wrapper
+        #     self.model.load_state_dict(backbone_3d_dict) # 3. load the new state dict
+            
+        #     self.model = self.model.module # remove the dataparallel wrapper
 
-            num_ch_3d = 512 # Number of output channels for backbone_3d
+        #     num_ch_3d = 512 # Number of output channels for backbone_3d
 
-        if opt.backbone_2d_weights:# load pretrained weights on COCO dataset        
-            self.model.load_weights(opt.backbone_2d_weights)
-            num_ch_2d = 425 # Number of output channels for backbone_2d
+        # if opt.backbone_2d_weights:# load pretrained weights on COCO dataset        
+        #     self.model.load_weights(opt.backbone_2d_weights)
+        #     num_ch_2d = 425 # Number of output channels for backbone_2d
 
-        ##### Attention & Final Conv #####
-        self.cfam = CFAMBlock(num_ch_2d+num_ch_3d, 1024)
-        self.conv_final = nn.Conv2d(1024, 5*(opt.n_classes+4+1), kernel_size=1, bias=False)
+        # ##### Attention & Final Conv #####
+        # self.cfam = CFAMBlock(num_ch_2d+num_ch_3d, 1024)
+        # self.conv_final = nn.Conv2d(1024, 5*(opt.n_classes+4+1), kernel_size=1, bias=False)
+        # self.conv_final = nn.Conv2d(num_ch_3d, opt.n_classes, kernel_size=1, bias=False)
+        self.linear = nn.Linear(num_ch_3d*7*7, opt.n_classes)
 
         self.seen = 0
 
 
     def forward(self, input):
-        x_3d = input # Input clip
-        x_2d = input[:, :, -1, :, :] # Last frame of the clip that is read
+        # x_3d = input # Input clip
+        # x_2d = input[:, :, -1, :, :] # Last frame of the clip that is read
 
-        x_2d, x_3d = self.model(x_2d, x_3d)
-        x_3d = torch.squeeze(x_3d, dim=2)
+        # x_2d, x_3d = self.model(x_2d, x_3d)
+        # x_3d = torch.squeeze(x_3d, dim=2)
 
-        x = torch.cat((x_3d, x_2d), dim=1)
-        x = self.cfam(x)
+        # x = torch.cat((x_3d, x_2d), dim=1) 
+        # x = self.cfam(x)
 
-        out = self.conv_final(x)
+        # out = self.conv_final(x)
+
+        out = self.backbone_3d(input)
+        
+        # out = self.conv_final(out)
+        out = nn.Flatten()(out)
+        out = self.linear(out)
+
+        # output size: BXnum_classXHXW
 
         return out
 

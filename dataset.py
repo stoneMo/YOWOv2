@@ -51,9 +51,10 @@ class listDataset(Dataset):
             exposure = 1.5
 
             clip, label = load_data_detection(self.base_path, imgpath,  self.train, self.clip_duration, self.shape, self.dataset_use, jitter, hue, saturation, exposure)
-
+            clip = [img.resize(self.shape) for img in clip]
+            
         else: # For Testing
-            frame_idx, clip, label = load_data_detection(self.base_path, imgpath, False, self.clip_duration, self.shape, self.dataset_use)
+            frame_idx, clip, label, clip_path = load_data_detection(self.base_path, imgpath, False, self.clip_duration, self.shape, self.dataset_use)
             clip = [img.resize(self.shape) for img in clip]
 
         if self.transform is not None:
@@ -70,7 +71,7 @@ class listDataset(Dataset):
         if self.train:
             return (clip, label)
         else:
-            return (frame_idx, clip, label)
+            return (frame_idx, clip, label, clip_path)
 
 class testData(Dataset):
 

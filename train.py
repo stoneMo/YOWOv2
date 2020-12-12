@@ -1,4 +1,6 @@
 from __future__ import print_function
+from __future__ import absolute_import
+from __future__ import division
 import sys
 import time
 import torch
@@ -8,19 +10,36 @@ import torch.optim as optim
 import torch.backends.cudnn as cudnn
 from torchvision import datasets, transforms
 
+import os
 import dataset
 import random
 import math
-import os
-from opts import parse_opts
-from utils import *
+
+import _init_paths
+
+from opts import opts
+from detectors.detector_factory import detector_factory
+
+# from opts3D import parse_opts
+from utils3D import *
 from cfg import parse_cfg
 from region_loss import RegionLoss
 
-from model import YOWOL, get_fine_tuning_parameters
+from model import Center3D, get_fine_tuning_parameters
 
+from FocalLoss import FocalLoss
+
+opt = opts().init()
+os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
+# opt.debug = 2
+# opt.task = "multi_pose"
+# opt.arch = "hourglass"
+# opt.load_model = "../models/multi_pose_hg_3x.pth"
+
+Detector = detector_factory[opt.task]
+detector = Detector(opt)
 # Training settings
-opt = parse_opts()
+
 # which dataset to use
 dataset_use   = opt.dataset
 assert dataset_use == 'ucf101-24' or dataset_use == 'jhmdb-21', 'invalid dataset'
@@ -53,18 +72,18 @@ steps         = [float(step) for step in net_options['steps'].split(',')]
 scales        = [float(scale) for scale in net_options['scales'].split(',')]
 
 # loss parameters
-loss_options               = parse_cfg(cfgfile)[1]
-region_loss                = RegionLoss()
-anchors                    = loss_options['anchors'].split(',')
-region_loss.anchors        = [float(i) for i in anchors]
-region_loss.num_classes    = int(loss_options['classes'])
-region_loss.num_anchors    = int(loss_options['num'])
-region_loss.anchor_step    = len(region_loss.anchors)//region_loss.num_anchors
-region_loss.object_scale   = float(loss_options['object_scale'])
-region_loss.noobject_scale = float(loss_options['noobject_scale'])
-region_loss.class_scale    = float(loss_options['class_scale'])
-region_loss.coord_scale    = float(loss_options['coord_scale'])
-region_loss.batch          = batch_size
+# loss_options               = parse_cfg(cfgfile)[1]
+# region_loss                = RegionLoss()
+# anchors                    = loss_options['anchors'].split(',')
+# region_loss.anchors        = [float(i) for i in anchors]
+# region_loss.num_classes    = int(loss_options['classes'])
+# region_loss.num_anchors    = int(loss_options['num'])
+# region_loss.anchor_step    = len(region_loss.anchors)//region_loss.num_anchors
+# region_loss.object_scale   = float(loss_options['object_scale'])
+# region_loss.noobject_scale = float(loss_options['noobject_scale'])
+# region_loss.class_scale    = float(loss_options['class_scale'])
+# region_loss.coord_scale    = float(loss_options['coord_scale'])
+# region_loss.batch          = batch_size
         
 #Train parameters
 max_epochs    = max_batches*batch_size//nsamples+1
@@ -86,10 +105,10 @@ if use_cuda:
     torch.cuda.manual_seed(seed)
 
 # Create model
-model = YOWOL(opt)
+model = Center3D(opt)
 
 model       = model.cuda()
-model       = nn.DataParallel(model, device_ids=None) # in multi-gpu case
+# model       = nn.DataParallel(model, device_ids=None) # in multi-gpu case
 model.seen  = 0
 print(model)
 
@@ -112,12 +131,14 @@ if opt.resume_path:
     print("===================================================================")
 
 
-region_loss.seen  = model.seen
+# region_loss.seen  = model.seen
 processed_batches = model.seen//batch_size
 
 init_width        = int(net_options['width'])
 init_height       = int(net_options['height'])
 init_epoch        = model.seen//nsamples 
+
+FL = FocalLoss(class_num=21, gamma=0)
 
 
 
@@ -140,14 +161,15 @@ def adjust_learning_rate(optimizer, batch):
 def train(epoch):
     global processed_batches
     t0 = time.time()
-    cur_model = model.module
-    region_loss.l_x.reset()
-    region_loss.l_y.reset()
-    region_loss.l_w.reset()
-    region_loss.l_h.reset()
-    region_loss.l_conf.reset()
-    region_loss.l_cls.reset()
-    region_loss.l_total.reset()
+    # cur_model = model.module
+    cur_model = model
+    # region_loss.l_x.reset()
+    # region_loss.l_y.reset()
+    # region_loss.l_w.reset()
+    # region_loss.l_h.reset()
+    # region_loss.l_conf.reset()
+    # region_loss.l_cls.reset()
+    # region_loss.l_total.reset()
 
     train_loader = torch.utils.data.DataLoader(
         dataset.listDataset(basepath, trainlist, dataset_use=dataset_use, shape=(init_width, init_height),
@@ -173,29 +195,36 @@ def train(epoch):
 
         if use_cuda:
             data = data.cuda()
-
+            target = target.cuda()
+        
+        print("data:", data.shape)
+        print("target shape:", target.shape)
+        print("target:", target)
         optimizer.zero_grad()
         output = model(data)
-        region_loss.seen = region_loss.seen + data.data.size(0)
-        loss = region_loss(output, target)
+        # region_loss.seen = region_loss.seen + data.data.size(0)
+        # loss = region_loss(output, target)
+        label_target = target[:,0]
+        # print(type(label_target))
+        # print(label_target)
+        loss = FL(output, label_target.long())
+
         loss.backward()
         optimizer.step()
 
         # save result every 1000 batches
-        if processed_batches % 500 == 0: # From time to time, reset averagemeters to see improvements
-            region_loss.l_x.reset()
-            region_loss.l_y.reset()
-            region_loss.l_w.reset()
-            region_loss.l_h.reset()
-            region_loss.l_conf.reset()
-            region_loss.l_cls.reset()
-            region_loss.l_total.reset()
+        # if processed_batches % 500 == 0: # From time to time, reset averagemeters to see improvements
+        #     region_loss.l_x.reset()
+        #     region_loss.l_y.reset()
+        #     region_loss.l_w.reset()
+        #     region_loss.l_h.reset()
+        #     region_loss.l_conf.reset()
+        #     region_loss.l_cls.reset()
+        #     region_loss.l_total.reset()
 
     t1 = time.time()
     logging('trained with %f samples/s' % (len(train_loader.dataset)/(t1-t0)))
     print('')
-
-
 
 def test(epoch):
     def truths_length(truths):
@@ -211,9 +240,10 @@ def test(epoch):
                    ]), train=False),
     batch_size=batch_size, shuffle=False, **kwargs)
 
-    num_classes = region_loss.num_classes
-    anchors     = region_loss.anchors
-    num_anchors = region_loss.num_anchors
+    # num_classes = region_loss.num_classes
+    num_classes = 21
+    # anchors     = region_loss.anchors
+    # num_anchors = region_loss.num_anchors
     conf_thresh_valid = 0.005
     total       = 0.0
     proposals   = 0.0
@@ -228,15 +258,19 @@ def test(epoch):
     logging('validation at epoch %d' % (epoch))
     model.eval()
 
-    for batch_idx, (frame_idx, data, target) in enumerate(test_loader):
+    for batch_idx, (frame_idx, data, target, clip_path) in enumerate(test_loader):
         if use_cuda:
             data = data.cuda()
         with torch.no_grad():
-            output = model(data).data
-            all_boxes = get_region_boxes(output, conf_thresh_valid, num_classes, anchors, num_anchors, 0, 1)
+            output = model(data).data    # classification
             for i in range(output.size(0)):
-                boxes = all_boxes[i]
-                boxes = nms(boxes, nms_thresh)
+                # localization
+                from valid_centernet import extract_box
+                frame_path = clip_path[-1]
+                print("frame_idx:", frame_idx[i])
+                print("frame_path:", frame_path)
+                boxes = detector.run(frame_path)
+
                 if dataset_use == 'ucf101-24':
                     detection_path = os.path.join('ucf_detections', 'detections_'+str(epoch), frame_idx[i])
                     current_dir = os.path.join('ucf_detections', 'detections_'+str(epoch))
@@ -311,15 +345,13 @@ def test(epoch):
     return fscore
 
 
-
-
 if opt.evaluate:
     logging('evaluating ...')
     test(0)
 else:
     for epoch in range(opt.begin_epoch, opt.end_epoch + 1):
         # Train the model for 1 epoch
-        train(epoch)
+        # train(epoch)
 
         # Validate the model
         fscore = test(epoch)
