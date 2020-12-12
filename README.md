@@ -4,8 +4,9 @@
 - Main branch runs customized YOWO-linknet models.
 - Baseline branch runs baseline YOWO models and YOWO with customized anchor boxes using K-means clustering.
 
-## Project report 
-https://www.overleaf.com/read/jdbqkgbfstws
+## Project report and video
+[[Report]](https://www.overleaf.com/read/jdbqkgbfstws)
+[[Video]](https://www.youtube.com/watch?v=WIr3QHQWmVs)
 
 ## 2D&3D Weights
 ```
