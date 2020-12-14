@@ -6,8 +6,9 @@ Spatiotemporal action recognition deals with locating and classifying actions in
 [[Video]](https://www.youtube.com/watch?v=WIr3QHQWmVs)
 
 ## Branches
-- Main branch runs customized YOWO-linknet models.
-- Baseline branch runs baseline YOWO models and YOWO with customized anchor boxes using K-means clustering.
+- Main branch runs the proposed Linknet models.
+- Center3D branch runs the proposed Center3D model.
+- Baseline branch runs baseline YOWO models and DIYAnchorBox.
 
 ## 2D&3D Weights
 ```
