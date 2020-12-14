@@ -17,7 +17,7 @@ The pretrained weights can be downloaded at ./weights folder.
 bash ./weights/download_pretrain.bash
 ```
 
-## Dataset 
+## Datasets
 ### JHMDB-21
 
 ```
@@ -41,7 +41,7 @@ The corresponding groundtruth file can be downloaded at ./evaluation/Object-Dete
 bash ./evaluation/Object-Detection-Metrics/download_groundtruths_agot.bash
 ```
 
-## Running Experiment
+## Running Experiments
 ### JHMDB-21
 ```
 Running Experiment on JHMDB-21.
