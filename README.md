@@ -1,4 +1,4 @@
-# Spatiotemporal Action Recognition in Videos
+# Towards Improving Spatiotemporal Action Recognition in Videos
 
 Spatiotemporal action recognition deals with locating and classifying actions in videos. Motivated by the latest state-of-the-art real-time object detector You Only Watch Once (YOWO), we aim to modify its structure to increase action detection precision and reduce computational time. Specifically, we propose four novel approaches in attempts to improve YOWO and address the imbalanced class issue in videos by modifying the loss function. We consider two moderate-sized datasets to apply our modification of YOWO - the popular Joint-annotated Human Motion Data Base (J-HMDB-21) and a private dataset of restaurant video footage provided by a Carnegie Mellon University-based startup, [*Agot.AI*](https://www.agot.ai/). The latter involves fast-moving actions with small objects as well as unbalanced data classes, making the task of action localization more challenging. 
 
